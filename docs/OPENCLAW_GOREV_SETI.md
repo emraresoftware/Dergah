@@ -4,6 +4,8 @@ Bu dosya OpenClaw orchestrator/worker dagiliminda hizli komut kaliplari verir.
 
 ## 1) Rolleri baslat
 
+Not: Gercek cihaz kurulumu icin once [docs/MAC_NODE_KATILIMI.md](docs/MAC_NODE_KATILIMI.md) adimlarini uygula. `start_node.sh` local env dosyalarini (`.env.worker1.local`, `.env.worker2.local`) example dosyalarina tercih eder.
+
 Orchestrator (M5):
 
 ```bash
