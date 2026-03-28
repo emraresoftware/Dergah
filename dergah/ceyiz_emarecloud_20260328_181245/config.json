@@ -1,0 +1,59 @@
+{
+    "servers": [
+        {
+            "id": "srv-001",
+            "name": "Örnek Sunucu",
+            "host": "172.17.0.10",
+            "port": 22,
+            "username": "root",
+            "password": "*** encrypted in database ***",
+            "group": "Üretim",
+            "description": "Ana üretim sunucusu",
+            "tags": [
+                "linux",
+                "üretim"
+            ],
+            "added_at": "2026-03-01"
+        },
+        {
+            "id": "srv-fcebe5",
+            "name": "ingress-107",
+            "host": "185.189.54.107",
+            "port": 22,
+            "username": "root",
+            "password": "*** encrypted in database ***",
+            "group": "Üretim",
+            "description": "Aktif ingress, panel ve paylaşımlı servis katmanı",
+            "tags": [
+                "linux",
+                "üretim",
+                "ingress"
+            ],
+            "added_at": "2026-03-01 02:43"
+        },
+        {
+            "id": "srv-5ee871",
+            "name": "ecomaiq-origin-104",
+            "host": "185.189.54.104",
+            "port": 22,
+            "username": "root",
+            "password": "*** encrypted in database ***",
+            "group": "Üretim",
+            "description": "ecomaiq origin sunucusu",
+            "tags": [
+                "linux",
+                "üretim",
+                "origin"
+            ],
+            "added_at": "2026-03-01 02:51"
+        }
+    ],
+    "settings": {
+        "refresh_interval": 30,
+        "ssh_timeout": 10,
+        "max_concurrent_connections": 5,
+        "alert_cpu_threshold": 90,
+        "alert_ram_threshold": 85,
+        "alert_disk_threshold": 90
+    }
+}

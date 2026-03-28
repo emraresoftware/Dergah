@@ -1,0 +1,14 @@
+EMARECLOUD DERGAH CEYIZ PAKETI
+
+This package is prepared for Dergah dervis onboarding on another computer.
+Included: core code, routes, docs, tests, firewall module, and ecomaiq external project folder.
+
+EXCLUDED FOR SECURITY/PERFORMANCE:
+- .env, .master.key, .github_token, venv/, node_modules/, __pycache__/
+- .git and temporary/cache folders
+
+Recommended reading order:
+1) README.md
+2) DOSYA_YAPISI.md
+3) Emarecloud hafiza.md
+4) docs/00_INDEX.md
