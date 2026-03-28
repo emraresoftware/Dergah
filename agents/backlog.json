@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "sprint": "D1",
+  "rules": {
+    "singleOwnerPerTask": true,
+    "maxInProgressPerAgent": 2,
+    "mergeRequires": ["tests", "review", "no-conflict"],
+    "directWriteCanonicalRepo": true,
+    "orchestratorOnlyOperations": ["validate", "merge", "release"],
+    "fileOwnership": {
+      "core":        ["scripts/dervis_core.py", "scripts/dergah_orkestrator.py", "scripts/llm_bridge.py"],
+      "panel":       ["scripts/dervis_panel.py", "scripts/dervis_widget.py", "data/chat_memory/**"],
+      "integration": ["scripts/dervis_haberlesme_github.py", "scripts/bootstrap_remote_mac.sh", "scripts/join_mac_node.sh"],
+      "quality":     ["agents/validate.sh", "docs/**", "scripts/analizci.py"],
+      "ops":         ["scripts/start_node.sh", "scripts/start_dervis_panel.sh", "agents/*.sh"]
+    }
+  },
+  "tasks": [
+    {
+      "id": "D1-001",
+      "title": "Node startup akisini netlestir",
+      "owner": "ops",
+      "status": "in_progress",
+      "dependsOn": []
+    },
+    {
+      "id": "D1-002",
+      "title": "Core panel durum senkronu",
+      "owner": "core",
+      "status": "todo",
+      "dependsOn": []
+    },
+    {
+      "id": "D1-003",
+      "title": "Github relay saglik kontrolleri",
+      "owner": "integration",
+      "status": "todo",
+      "dependsOn": []
+    },
+    {
+      "id": "D1-004",
+      "title": "Dergah kalite kapisi ve smoke",
+      "owner": "quality",
+      "status": "todo",
+      "dependsOn": ["D1-001", "D1-002", "D1-003"]
+    }
+  ]
+}

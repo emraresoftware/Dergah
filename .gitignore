@@ -4,4 +4,6 @@ __pycache__/
 logs/
 user_data/
 .DS_Store
-agents/
+agents/worktrees/
+agents/copies/
+agents/handoffs.ndjson

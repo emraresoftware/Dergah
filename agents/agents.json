@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "repoRoot": "./",
+  "baseBranch": "main",
+  "worktreeRoot": "./agents/worktrees",
+  "agents": [
+    {
+      "id": "orchestrator",
+      "branch": "agent/orchestrator",
+      "path": "agents/worktrees/orchestrator",
+      "focus": ["planning", "dependencies", "merge-gate", "release-check", "repo-hygiene"]
+    },
+    {
+      "id": "core",
+      "branch": "agent/core",
+      "path": "agents/worktrees/core",
+      "focus": ["dervis-core", "dergah-orkestrator", "niyet-akisi", "is-kurallari"]
+    },
+    {
+      "id": "panel",
+      "branch": "agent/panel",
+      "path": "agents/worktrees/panel",
+      "focus": ["dervis-panel", "widget", "ui-akisi", "panel-state"]
+    },
+    {
+      "id": "integration",
+      "branch": "agent/integration",
+      "path": "agents/worktrees/integration",
+      "focus": ["github-relay", "network-bootstrap", "node-sync", "api-security"]
+    },
+    {
+      "id": "quality",
+      "branch": "agent/quality",
+      "path": "agents/worktrees/quality",
+      "focus": ["syntax-check", "smoke-tests", "health-check", "regression-gate"]
+    },
+    {
+      "id": "ops",
+      "branch": "agent/ops",
+      "path": "agents/worktrees/ops",
+      "focus": ["scripts", "startup", "runtime", "log-operations"]
+    }
+  ]
+}
