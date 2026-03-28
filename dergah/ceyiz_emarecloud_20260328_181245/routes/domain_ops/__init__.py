@@ -1,1 +1,0 @@
-"""Operations domain route paketi."""

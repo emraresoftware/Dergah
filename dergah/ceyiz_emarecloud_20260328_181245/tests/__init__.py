@@ -1,1 +1,0 @@
-"""EmareCloud — Test paketi."""
