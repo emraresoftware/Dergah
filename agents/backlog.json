@@ -1,48 +1,91 @@
 {
-  "version": 1,
-  "sprint": "D1",
-  "rules": {
-    "singleOwnerPerTask": true,
-    "maxInProgressPerAgent": 2,
-    "mergeRequires": ["tests", "review", "no-conflict"],
-    "directWriteCanonicalRepo": true,
-    "orchestratorOnlyOperations": ["validate", "merge", "release"],
-    "fileOwnership": {
-      "core":        ["scripts/dervis_core.py", "scripts/dergah_orkestrator.py", "scripts/llm_bridge.py"],
-      "panel":       ["scripts/dervis_panel.py", "scripts/dervis_widget.py", "data/chat_memory/**"],
-      "integration": ["scripts/dervis_haberlesme_github.py", "scripts/bootstrap_remote_mac.sh", "scripts/join_mac_node.sh"],
-      "quality":     ["agents/validate.sh", "docs/**", "scripts/analizci.py"],
-      "ops":         ["scripts/start_node.sh", "scripts/start_dervis_panel.sh", "agents/*.sh"]
+  "version": 2,
+  "sprints": {
+    "D1": {
+      "label": "Dergah sistem sprint",
+      "rules": {
+        "singleOwnerPerTask": true,
+        "maxInProgressPerAgent": 2,
+        "mergeRequires": ["tests", "review", "no-conflict"],
+        "directWriteCanonicalRepo": true,
+        "orchestratorOnlyOperations": ["validate", "merge", "release"],
+        "fileOwnership": {
+          "core":        ["scripts/dervis_core.py", "scripts/dergah_orkestrator.py", "scripts/llm_bridge.py"],
+          "panel":       ["scripts/dervis_panel.py", "scripts/dervis_widget.py", "data/chat_memory/**"],
+          "integration": ["scripts/dervis_haberlesme_github.py", "scripts/bootstrap_remote_mac.sh", "scripts/join_mac_node.sh"],
+          "quality":     ["agents/validate.sh", "docs/**", "scripts/analizci.py"],
+          "ops":         ["scripts/start_node.sh", "scripts/start_dervis_panel.sh", "agents/*.sh"]
+        }
+      },
+      "tasks": [
+        { "id": "D1-001", "title": "Node startup akisini netlestir",     "owner": "ops",         "status": "in_progress", "dependsOn": [] },
+        { "id": "D1-002", "title": "Core panel durum senkronu",           "owner": "core",        "status": "todo",        "dependsOn": [] },
+        { "id": "D1-003", "title": "Github relay saglik kontrolleri",     "owner": "integration", "status": "todo",        "dependsOn": [] },
+        { "id": "D1-004", "title": "Dergah kalite kapisi ve smoke",       "owner": "quality",     "status": "todo",        "dependsOn": ["D1-001", "D1-002", "D1-003"] }
+      ]
+    },
+    "E1": {
+      "label": "Örnek Proje — Node + Express REST API",
+      "project": "projects/emarecloud_ceyiz",
+      "rules": {
+        "singleOwnerPerTask": true,
+        "maxInProgressPerAgent": 1,
+        "mergeRequires": ["tests", "review", "no-conflict"],
+        "orchestratorOnlyOperations": ["validate", "merge", "release"],
+        "fileOwnership": {
+          "yonetici":     ["agents/workspaces/yonetici/**", "agents/cards/E1-*"],
+          "api-dev":      ["src/routes/**", "src/controllers/**", "docs/API.md"],
+          "sunucu-dev":   ["src/index.js", "src/app.js", "src/middleware/**", "src/config/**"],
+          "veri-dev":     ["src/models/**", "src/storage/**", "src/data/**"],
+          "guvenlik-dev": ["src/middleware/auth.js", "src/middleware/validate.js", "src/middleware/rateLimit.js"],
+          "test-dev":     ["tests/**", "jest.config.js", ".github/workflows/**"]
+        }
+      },
+      "tasks": [
+        {
+          "id": "E1-000",
+          "title": "Sprint koordinasyonu ve proje iskeleti",
+          "owner": "yonetici",
+          "status": "in_progress",
+          "dependsOn": []
+        },
+        {
+          "id": "E1-001",
+          "title": "Express server kurulumu ve middleware",
+          "owner": "sunucu-dev",
+          "status": "in_progress",
+          "dependsOn": []
+        },
+        {
+          "id": "E1-002",
+          "title": "REST endpoint tasarimi ve implementasyon",
+          "owner": "api-dev",
+          "status": "in_progress",
+          "dependsOn": []
+        },
+        {
+          "id": "E1-003",
+          "title": "Veri katmani ve model tasarimi",
+          "owner": "veri-dev",
+          "status": "in_progress",
+          "dependsOn": []
+        },
+        {
+          "id": "E1-004",
+          "title": "Validasyon auth ve guvenlik onlemleri",
+          "owner": "guvenlik-dev",
+          "status": "in_progress",
+          "dependsOn": []
+        },
+        {
+          "id": "E1-005",
+          "title": "Unit ve integration testleri",
+          "owner": "test-dev",
+          "status": "todo",
+          "dependsOn": ["E1-001", "E1-002", "E1-003", "E1-004"]
+        }
+      ]
     }
   },
-  "tasks": [
-    {
-      "id": "D1-001",
-      "title": "Node startup akisini netlestir",
-      "owner": "ops",
-      "status": "in_progress",
-      "dependsOn": []
-    },
-    {
-      "id": "D1-002",
-      "title": "Core panel durum senkronu",
-      "owner": "core",
-      "status": "todo",
-      "dependsOn": []
-    },
-    {
-      "id": "D1-003",
-      "title": "Github relay saglik kontrolleri",
-      "owner": "integration",
-      "status": "todo",
-      "dependsOn": []
-    },
-    {
-      "id": "D1-004",
-      "title": "Dergah kalite kapisi ve smoke",
-      "owner": "quality",
-      "status": "todo",
-      "dependsOn": ["D1-001", "D1-002", "D1-003"]
-    }
-  ]
+  "activeSprint": "E1"
 }

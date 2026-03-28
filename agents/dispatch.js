@@ -161,9 +161,33 @@ function main() {
   const backlog = readJson(BACKLOG_PATH);
   const agentsConfig = readJson(AGENTS_JSON_PATH);
   const agentMap = Object.fromEntries(agentsConfig.agents.map(a => [a.id, a]));
-  const fileOwnership = backlog.rules?.fileOwnership || {};
 
-  const tasks = backlog.tasks || [];
+  // Sprint seçimi: --sprint E1 ile override, yoksa activeSprint, yoksa eski format
+  const sprintFlag = (() => {
+    const idx = args.indexOf('--sprint');
+    return idx !== -1 ? args[idx + 1] : null;
+  })();
+
+  let tasks, fileOwnership, sprintLabel;
+
+  if (backlog.sprints) {
+    // Yeni çoklu-sprint format (v2+)
+    const activeSprint = sprintFlag || backlog.activeSprint || Object.keys(backlog.sprints)[0];
+    const sprintData = backlog.sprints[activeSprint];
+    if (!sprintData) {
+      console.error(`Sprint bulunamadı: ${activeSprint}. Mevcut: ${Object.keys(backlog.sprints).join(', ')}`);
+      process.exit(1);
+    }
+    tasks = sprintData.tasks.map(t => ({ ...t, sprint: activeSprint }));
+    fileOwnership = sprintData.rules?.fileOwnership || {};
+    sprintLabel = `${activeSprint} — ${sprintData.label || ''}`;
+    console.log(`[sprint] ${sprintLabel}`);
+  } else {
+    // Eski tek-sprint format (v1 geriye dönük uyumluluk)
+    tasks = backlog.tasks || [];
+    fileOwnership = backlog.rules?.fileOwnership || {};
+    sprintLabel = backlog.sprint || '?';
+  }
 
   // Hangi statüler dahil?
   const allowedStatuses = ALL ? ['in_progress', 'todo'] : ['in_progress'];
@@ -197,7 +221,7 @@ function main() {
     }
 
     const items = extractTodoItems(task.id, task.title);
-    appendToTalimatlar(talimatlarPath, { ...task, sprint: backlog.sprint }, items);
+    appendToTalimatlar(talimatlarPath, task, items);
 
     console.log(`[dispatch] ${task.id} → agents/workspaces/${agentId}/TALIMATLAR.md (${items.length} madde)`);
 

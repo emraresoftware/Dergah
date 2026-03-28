@@ -76,6 +76,15 @@ def _load_backlog() -> dict:
     return {}
 
 
+def _active_sprint_data(bl: dict) -> tuple[str, list, dict]:
+    """(sprint_id, tasks_list, rules) döner — eski ve yeni format destekler."""
+    if bl.get("sprints"):
+        sid = bl.get("activeSprint") or list(bl["sprints"].keys())[0]
+        sd = bl["sprints"].get(sid, {})
+        return sid, sd.get("tasks", []), sd.get("rules", {})
+    return bl.get("sprint", "?"), bl.get("tasks", []), bl.get("rules", {})
+
+
 def _get_active_model() -> str:
     _add_scripts_to_path()
     try:
@@ -115,28 +124,15 @@ def _stream_ai(query: str, system: str = "", timeout: int = 120) -> None:
 
 # ── status ────────────────────────────────────────────────────────────────────
 
-@click.group(invoke_without_command=True, context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
-@click.argument("args", nargs=-1, type=click.UNPROCESSED)
+@click.group(invoke_without_command=True)
 @click.pass_context
-def cli(ctx: click.Context, args: tuple) -> None:
+def cli(ctx: click.Context) -> None:
     """🧿  Dergah — yerel AI geliştirici asistanı
 
     Direkt soru da sorabilirsin:  dervis "python'da list comprehension ne zaman kullanılır?"
     """
     if ctx.invoked_subcommand is None:
-        if args:
-            # bare soru → ask komutuna yönlendir
-            question = " ".join(args)
-            sys_prompt = (
-                "Sen Dervis, yerel bir AI kod asistanısın. Türkçe cevaplar ver. "
-                "Kısa ve net ol. Kod önerirken doğrudan kod bloğu yaz."
-            )
-            console.print(Panel(f"[bold]{question[:120]}[/]", title="[cyan]Soru[/]", border_style="cyan"))
-            console.print("[dim cyan]▸ Yanıt:[/]")
-            _stream_ai(question, system=sys_prompt)
-        else:
-            click.echo(ctx.get_help())
-
+        click.echo(ctx.get_help())
 
 @cli.command("status")
 def cmd_status() -> None:
@@ -169,13 +165,13 @@ def cmd_status() -> None:
 
     # backlog özeti
     bl = _load_backlog()
-    tasks = bl.get("tasks", [])
+    sid, tasks, _ = _active_sprint_data(bl)
     in_prog = sum(1 for t_ in tasks if t_.get("status") == "in_progress")
     todo_c = sum(1 for t_ in tasks if t_.get("status") == "todo")
     done_c = sum(1 for t_ in tasks if t_.get("status") == "done")
     t.add_row(
         "Sprint",
-        f"[bold]{bl.get('sprint', '-')}[/]",
+        f"[bold]{sid}[/]",
         f"in_progress: {in_prog}  todo: {todo_c}  done: {done_c}",
     )
 
@@ -207,12 +203,12 @@ def cmd_sprint(show_all: bool) -> None:
         console.print("[yellow]agents/backlog.json bulunamadı.[/]")
         return
 
-    tasks = bl.get("tasks", [])
+    sid, tasks, _ = _active_sprint_data(bl)
     if not show_all:
         tasks = [t for t in tasks if t.get("status") != "done"]
 
     t = Table(
-        title=f"Sprint {bl.get('sprint', '?')} — Görev Listesi",
+        title=f"Sprint {sid} — Görev Listesi",
         expand=True,
         border_style="dim",
     )
@@ -426,5 +422,19 @@ def cmd_commit(push: bool) -> None:
 
 # ── entry ─────────────────────────────────────────────────────────────────────
 
+# Bilinen alt komutlar
+_KNOWN_COMMANDS = {"status", "sprint", "ask", "review", "dispatch", "log", "panel", "commit"}
+
 if __name__ == "__main__":
-    cli()
+    # İlk arg bilinen bir komut değilse ve - ile başlamıyorsa → bare soru olarak "ask"a yönlendir
+    if len(sys.argv) > 1 and sys.argv[1] not in _KNOWN_COMMANDS and not sys.argv[1].startswith("-"):
+        question = " ".join(sys.argv[1:])
+        sys_prompt = (
+            "Sen Dervis, yerel bir AI kod asistanısın. Türkçe cevaplar ver. "
+            "Kısa ve net ol. Kod önerirken doğrudan kod bloğu yaz."
+        )
+        console.print(Panel(f"[bold]{question[:120]}[/]", title="[cyan]Soru[/]", border_style="cyan"))
+        console.print("[dim cyan]▸ Yanıt:[/]")
+        _stream_ai(question, system=sys_prompt)
+    else:
+        cli()
