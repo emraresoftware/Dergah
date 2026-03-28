@@ -62,6 +62,7 @@ MODEL_OPTIONS = {
 USER_BUBBLE_MAX_CHARS = 26
 AI_BUBBLE_MAX_CHARS = 30
 _DERVIS_CORE_MODULE: Any | None = None
+_OTONOM_PROJE_MODULE: Any | None = None
 
 _SYSTEM_BASE = (
     f"Sen Dervis Core adli yerel asistansin. Kimligin: {get_identity_label(MODEL_NAME)}.\n"
@@ -146,6 +147,19 @@ def _load_dervis_core_module() -> Any:
     return _DERVIS_CORE_MODULE
 
 
+def _load_otonom_proje_module() -> Any:
+    global _OTONOM_PROJE_MODULE
+    if _OTONOM_PROJE_MODULE is not None:
+        return _OTONOM_PROJE_MODULE
+
+    script_dir_str = str(SCRIPT_DIR)
+    if script_dir_str not in sys.path:
+        sys.path.append(script_dir_str)
+
+    _OTONOM_PROJE_MODULE = importlib.import_module("emare_otonom_proje")
+    return _OTONOM_PROJE_MODULE
+
+
 def _load_learning_context_text(limit: int = 6) -> str:
     items: list[str] = []
     try:
@@ -199,6 +213,19 @@ def _normalize_query(text: str) -> str:
         "Ç": "c", "Ğ": "g", "İ": "i", "I": "i", "Ö": "o", "Ş": "s", "Ü": "u",
     })
     return text.translate(table).lower().strip()
+
+
+def _is_autonomous_project_start(text: str) -> bool:
+    normalized = _normalize_query(text)
+    triggers = [
+        "yazmaya basla",
+        "yazmaya başla",
+        "/yazmaya-basla",
+        "/otonom-proje",
+        "projeyi yazmaya basla",
+        "projeyi yazmaya başla",
+    ]
+    return any(trigger in normalized for trigger in triggers)
 
 
 def _is_memory_question(text: str) -> bool:
@@ -885,6 +912,17 @@ class DervisPanel:
         history = self.messages[-30:]
         threading.Thread(target=self._call_agent_reply, args=(text, history), daemon=True).start()
 
+    def _send_automation_text(self, text: str) -> None:
+        self._append_message("user", text)
+        self.pending_user_text = text
+        self.current_assistant_ref = self._add_thinking_bubble()
+        self.current_ai_text = ""
+        self._stop_event.clear()
+        self._set_busy(True)
+
+        history = self.messages[-40:]
+        threading.Thread(target=self._call_project_automation, args=(history,), daemon=True).start()
+
     def _ingest_file(self, file_path: str) -> None:
         path = Path(file_path).expanduser()
         if not path.exists() or not path.is_file():
@@ -977,6 +1015,16 @@ class DervisPanel:
         except Exception as exc:
             self.event_queue.put(("error", f"Agent hatasi: {exc}"))
 
+    def _call_project_automation(self, history: list[dict[str, str]]) -> None:
+        try:
+            automation = _load_otonom_proje_module()
+            answer = automation.start_from_chat(history)
+            if self._stop_event.is_set():
+                return
+            self.event_queue.put(("done", str(answer).strip() or "Otonom proje hazir."))
+        except Exception as exc:
+            self.event_queue.put(("error", f"Otonom proje hatasi: {exc}"))
+
     def _on_send(self, event: Any = None) -> None:
         if self.busy:
             return
@@ -1002,6 +1050,10 @@ class DervisPanel:
             return
         if text.lower() in {"/temizle", "/clear"}:
             self._clear_chat()
+            return
+
+        if _is_autonomous_project_start(text):
+            self._send_automation_text(text)
             return
 
         self._send_text(text)

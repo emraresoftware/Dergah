@@ -7,6 +7,7 @@ Kullanım:
   dervis sprint               Aktif sprint tablosu
   dervis ask "soru"           AI'ya hızlı soru
   dervis ask "soru" -f d.py   Dosya bağlamıyla soru
+    dervis otonom "brief"       Sohbetten otonom proje başlat
   dervis review             Kod incelemesi
   dervis dispatch [opts]      Agent workspace güncelle
   dervis log [N]              Son N sohbet mesajını göster
@@ -383,6 +384,57 @@ def cmd_panel() -> None:
     console.print("[green]Panel başlatıldı.[/]")
 
 
+# ── otonom ───────────────────────────────────────────────────────────────────
+
+@cli.command("otonom")
+@click.argument("brief", nargs=-1)
+@click.option("--desktop-root", default=None, help="Proje kökünün yazılacağı dizin (varsayılan: ~/Desktop)")
+@click.option("--no-open", is_flag=True, help="VS Code pencerelerini otomatik açma")
+@click.option("--no-paste", is_flag=True, help="İlk prompt'u chat alanına otomatik yapıştırma")
+def cmd_otonom(brief: tuple[str, ...], desktop_root: str | None, no_open: bool, no_paste: bool) -> None:
+    """Sohbet brifinden otonom proje klasörü + agent workspace'leri üret."""
+    text = " ".join(brief).strip()
+    if not text:
+        console.print("[yellow]Kullanım: dervis otonom \"proje kısa tanımı\"[/]")
+        return
+
+    _add_scripts_to_path()
+    try:
+        import emare_otonom_proje as otonom  # type: ignore
+    except Exception as exc:
+        console.print(f"[red]emare_otonom_proje import hatası: {exc}[/]")
+        return
+
+    messages = [
+        {"role": "user", "content": text},
+        {"role": "assistant", "content": "Projenin ana hatlarini netlestirelim."},
+        {"role": "user", "content": "Yazmaya basla"},
+    ]
+
+    console.print("[cyan]▸ Otonom proje akışı başlatılıyor...[/]")
+    result = otonom.build_autonomous_project(
+        messages,
+        desktop_root=desktop_root,
+        open_workspaces=not no_open,
+        auto_paste=not no_paste,
+    )
+
+    spec = result.get("spec", {})
+    ws = result.get("workspace_result", {})
+    table = Table(title="Otonom Proje Sonucu", expand=True, border_style="dim")
+    table.add_column("Alan", style="bold")
+    table.add_column("Değer")
+    table.add_row("Proje", str(spec.get("project_name", "-")))
+    table.add_row("Slug", str(spec.get("project_slug", "-")))
+    table.add_row("Şablon", str(spec.get("template", "-")))
+    table.add_row("Klasör", str(result.get("root_dir", "-")))
+    table.add_row("Dispatch", "OK" if result.get("dispatch_ok") else "HATA")
+    table.add_row("Açılan Workspace", ", ".join(ws.get("opened", [])) or "-")
+    table.add_row("Prompt Yapıştırılan", ", ".join(ws.get("pasted", [])) or "-")
+    table.add_row("Açılamayan", ", ".join(ws.get("failed", [])) or "-")
+    console.print(table)
+
+
 # ── commit ────────────────────────────────────────────────────────────────────
 
 @cli.command("commit")
@@ -423,7 +475,7 @@ def cmd_commit(push: bool) -> None:
 # ── entry ─────────────────────────────────────────────────────────────────────
 
 # Bilinen alt komutlar
-_KNOWN_COMMANDS = {"status", "sprint", "ask", "review", "dispatch", "log", "panel", "commit"}
+_KNOWN_COMMANDS = {"status", "sprint", "ask", "review", "dispatch", "log", "panel", "otonom", "commit"}
 
 if __name__ == "__main__":
     # İlk arg bilinen bir komut değilse ve - ile başlamıyorsa → bare soru olarak "ask"a yönlendir
