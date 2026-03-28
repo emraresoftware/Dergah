@@ -115,12 +115,27 @@ def _stream_ai(query: str, system: str = "", timeout: int = 120) -> None:
 
 # ── status ────────────────────────────────────────────────────────────────────
 
-@click.group(invoke_without_command=True)
+@click.group(invoke_without_command=True, context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
+@click.argument("args", nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
-def cli(ctx: click.Context) -> None:
-    """🧿  Dergah — yerel AI geliştirici asistanı"""
+def cli(ctx: click.Context, args: tuple) -> None:
+    """🧿  Dergah — yerel AI geliştirici asistanı
+
+    Direkt soru da sorabilirsin:  dervis "python'da list comprehension ne zaman kullanılır?"
+    """
     if ctx.invoked_subcommand is None:
-        click.echo(ctx.get_help())
+        if args:
+            # bare soru → ask komutuna yönlendir
+            question = " ".join(args)
+            sys_prompt = (
+                "Sen Dervis, yerel bir AI kod asistanısın. Türkçe cevaplar ver. "
+                "Kısa ve net ol. Kod önerirken doğrudan kod bloğu yaz."
+            )
+            console.print(Panel(f"[bold]{question[:120]}[/]", title="[cyan]Soru[/]", border_style="cyan"))
+            console.print("[dim cyan]▸ Yanıt:[/]")
+            _stream_ai(question, system=sys_prompt)
+        else:
+            click.echo(ctx.get_help())
 
 
 @cli.command("status")
