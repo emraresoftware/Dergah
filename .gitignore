@@ -4,3 +4,4 @@ __pycache__/
 logs/
 user_data/
 .DS_Store
+agents/
