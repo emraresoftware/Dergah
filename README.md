@@ -24,20 +24,21 @@
 
 ```
 Dergah/
-├── dergah/              # Ana modül (API uygulaması)
-│   ├── api/             # API route'ları
-│   ├── models/          # Veritabanı modelleri
-│   ├── auth/            # Kimlik doğrulama
-│   └── services/        # İş mantığı
-├── scripts/             # Otomasyon betikleri
-│   ├── deploy.py
-│   ├── monitor.py
-│   └── ...
-├── projects/            # Alt proje yapılandırmaları
-├── docs/                # Dokümantasyon
-├── data/                # Veri dosyaları
-├── user_data/           # Kullanıcı verileri
-├── .env.*.example       # Ortam şablonları
+├── scripts/                 # Çalışan düğüm, panel ve orkestrasyon scriptleri
+│   ├── start_node.sh
+│   ├── dervis_core.py
+│   ├── dervis_panel.py
+│   └── legacy/              # Eski giriş betikleri (kökten taşındı)
+├── data/                    # Defterler, öğrenme profili ve çalışma verileri
+│   └── config/
+│       └── sunucular.json
+├── projects/                # Bağlı proje kısayolları/symlink alanı
+├── projects_meta/           # Proje meta ve arşiv dosyaları
+│   └── archives/
+├── docs/                    # Operasyon ve kurulum dokümantasyonu
+├── dergah/                  # Ceyiz/ham proje paketleri ve çalışma alanı
+├── user_data/               # Lokal tarayıcı/profil verileri (git ignore)
+├── .env.*.example           # Ortam şablonları
 └── README.md
 ```
 
@@ -66,11 +67,14 @@ cp .env.openclaw.example .env.openclaw
 
 ### 3. Çalıştırma
 ```bash
-# Otomatik görevleri başlat
-python3 otomatik_is.py
+# Yapılandırmayı kontrol et
+scripts/start_node.sh orchestrator status
 
-# veya ana uygulama
-python3 main.py
+# Ana paneli başlat
+scripts/start_node.sh orchestrator panel
+
+# Worker örneği
+scripts/start_node.sh worker1 core
 ```
 
 ---
